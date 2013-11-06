@@ -120,8 +120,8 @@ public class TweetsAPI {
 		cassandra.execute(insert);
 		
 		// Other timelines
-		ResultSet followees = cassandra.execute("SELECT following " +
-				                                  "FROM follows " +
+		ResultSet followees = cassandra.execute("SELECT who " +
+				                                  "FROM followers " +
 				                                 "WHERE username = '" + tweet.username + "'");
 		for(Row row: followees.all()) {
 			for(String username: row.getSet(0, String.class)) {
@@ -129,7 +129,7 @@ public class TweetsAPI {
 				    .value("username", username)
 				    .value("time", tweet.time == null ? new Date() : tweet.time)
 				    .value("content", "@" + tweet.username + ": " + tweet.content);
-		        cassandra.execute(insert);
+		        cassandra.executeAsync(insert);
 		    }
 		}
 		return true;
