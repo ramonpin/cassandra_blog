@@ -119,12 +119,12 @@ public class TweetsAPI {
 				.value("content", "@" + tweet.username + ": " + tweet.content);
 		cassandra.execute(insert);
 		
-		// Other timelines
-		ResultSet followees = cassandra.execute("SELECT who " +
+		// Update other timelines
+		ResultSet followers = cassandra.execute("SELECT who " +
 				                                  "FROM followers " +
 				                                 "WHERE username = '" + tweet.username + "'");
-		for(Row row: followees.all()) {
-			for(String username: row.getSet(0, String.class)) {
+		for(Row follower: followers.all()) {
+			for(String username: follower.getSet(0, String.class)) {
 				insert = insertInto("tweets")
 				    .value("username", username)
 				    .value("time", tweet.time == null ? new Date() : tweet.time)
