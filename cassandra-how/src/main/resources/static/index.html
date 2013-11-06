@@ -28,9 +28,29 @@
         </div><!--/.nav-collapse -->
       </div>
     </div>
-    
 
-    <div class="container">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-6">
+				<h2>Follow</h2>
+				<form class="form-inline" role="form">
+					<div class="form-group">
+						<label class="sr-only" for="follow-username">username</label> 
+						<input type="text" class="form-control" id="follow-username" placeholder="ramon">
+					</div>
+					<button type="submit" class="btn btn-default" onclick="follow();">follow</button>
+					<button type="submit" class="btn btn-default" onclick="unfollow();">unfollow</button>					
+					<div class="form-group">
+						<label class="sr-only" for="follow-followed">follow</label> 
+						<input type="text" class="form-control" id="follow-followed" placeholder="dominik">
+					</div>
+				</form>
+				<div id="follow-message"></div>
+			</div>
+		</div>
+	</div>
+
+	<div class="container">
       <div class="row">
         <div class="col-md-6">
           <h2>Tweet</h2>
@@ -72,8 +92,8 @@
 		  </div>
         </div>
       </div>
-       <hr>
 
+      <hr>
       <footer>
         <p>&copy; Accenture 2013</p>
       </footer>

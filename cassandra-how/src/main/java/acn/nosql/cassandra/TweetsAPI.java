@@ -3,16 +3,13 @@ package acn.nosql.cassandra;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.desc;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.add;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,8 +70,9 @@ public class TweetsAPI {
 			public Object handle(Request request, Response response) {
 				Follow follow = gson.fromJson(request.body(), Follow.class);
 				follow(cassandra, follow);
-				log.info("Saved {}", request.body());
-				return String.format("Now '%s' follows '%s'.", follow.username,
+				log.info("Following {}", request.body());
+				return String.format("Now '%s' follows '%s'.", 
+						follow.username,
 						follow.followed);
 			}
 
@@ -84,8 +82,9 @@ public class TweetsAPI {
 			public Object handle(Request request, Response response) {
 				Follow follow = gson.fromJson(request.body(), Follow.class);
 				unfollow(cassandra, follow);
-				log.info("Saved {}", request.body());
-				return String.format("Now '%s' unfollows '%s'.", follow.username,
+				log.info("Unfollowing {}", request.body());
+				return String.format("Now '%s' unfollows '%s'.", 
+						follow.username,
 						follow.followed);
 			}
 

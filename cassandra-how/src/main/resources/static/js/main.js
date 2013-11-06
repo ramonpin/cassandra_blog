@@ -42,6 +42,42 @@ function loadTweetsOfUser() {
 	loadTweets(username);
 }
 
+function follow() {
+	var sendobject = {
+		username: document.querySelector("#follow-username").value,
+		followed: document.querySelector("#follow-followed").value
+	}
+	$.ajax({
+		type: "POST",
+		contentType: "application/json; charset=UTF-8",
+		url: "/follow",
+		data: JSON.stringify(sendobject),
+		success:
+			function( data, textStatus, jqXHR ) {
+				console.log(data);
+				$("#follow-message").html(data);
+			}		
+	})
+}
+
+function unfollow() {
+	var sendobject = {
+		username: document.querySelector("#follow-username").value,
+		followed: document.querySelector("#follow-followed").value
+	}
+	$.ajax({
+		type: "POST",
+		contentType: "application/json; charset=UTF-8",
+		url: "/unfollow",
+		data: JSON.stringify(sendobject),
+		success:
+			function( data, textStatus, jqXHR ) {
+			    console.log(data);
+				$("#follow-message").html(data);
+			}		
+	})
+}
+
 $( function() {
 	ractiveTweetResult = new Ractive({
 	    el: 'tweetAlerts',
