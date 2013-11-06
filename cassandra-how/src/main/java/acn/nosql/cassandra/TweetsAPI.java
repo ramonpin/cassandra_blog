@@ -8,8 +8,10 @@ import static spark.Spark.get;
 import static spark.Spark.post;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +22,12 @@ import spark.Route;
 import acn.nosql.cassandra.pojo.Follow;
 import acn.nosql.cassandra.pojo.Tweet;
 
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -92,43 +96,73 @@ public class TweetsAPI {
 	}
 
 	protected static boolean follow(Session cassandra, Follow follow) {
-		cassandra.execute("UPDATE follows " +
-				             "SET following = following + {'" + follow.followed + "'} " + 
-				           "WHERE username = '" + follow.username + "'");
-		cassandra.execute("UPDATE followers " +
-	             "SET who = who + {'" + follow.username + "'} " + 
-	           "WHERE username = '" + follow.followed + "'");
+		
+		Set<String> set = new HashSet<String>();
+		
+		PreparedStatement psFollows = cassandra.prepare(
+				"UPDATE follows " +
+	               "SET following = following + ? " + 
+		         "WHERE username = ?");
+		
+		set.add(follow.followed);
+		cassandra.execute(psFollows.bind(set, follow.username));
+		
+		PreparedStatement psFollowers = cassandra.prepare(
+				"UPDATE followers " +
+	               "SET who = who + ? " + 
+		         "WHERE username = ?");
+		
+		set.clear();
+		set.add(follow.username);
+		cassandra.execute(psFollowers.bind(set, follow.followed));
+		
 		return true;
 	}
 
 	protected static boolean unfollow(Session cassandra, Follow follow) {
-		cassandra.execute("UPDATE follows " +
-				             "SET following = following - {'" + follow.followed + "'} " + 
-				           "WHERE username = '" + follow.username + "'");
-		cassandra.execute("UPDATE followers " +
-	             "SET who = who - {'" + follow.username + "'} " + 
-	           "WHERE username = '" + follow.followed + "'");
+		
+		Set<String> set = new HashSet<String>();
+		
+		PreparedStatement psFollows = cassandra.prepare(
+				"UPDATE follows " +
+	               "SET following = following - ? " + 
+		         "WHERE username = ?");
+		
+		set.add(follow.followed);
+		cassandra.execute(psFollows.bind(set, follow.username));
+		
+		PreparedStatement psFollowers = cassandra.prepare(
+				"UPDATE followers " +
+	               "SET who = who - ? " + 
+		         "WHERE username = ?");
+		
+		set.clear();
+		set.add(follow.username);
+		cassandra.execute(psFollowers.bind(set, follow.followed));
+		
 		return true;
 	}
 
 	public static boolean upsertTweet(final Session cassandra, Tweet tweet) {
-		Statement insert = insertInto("tweets")
+		cassandra.execute(
+			insertInto("tweets")
 				.value("username", tweet.username)
 				.value("time", tweet.time == null ? new Date() : tweet.time)
-				.value("content", "@" + tweet.username + ": " + tweet.content);
-		cassandra.execute(insert);
+				.value("content", "@" + tweet.username + ": " + tweet.content));
 		
 		// Update other timelines
-		ResultSet followers = cassandra.execute("SELECT who " +
-				                                  "FROM followers " +
-				                                 "WHERE username = '" + tweet.username + "'");
+		ResultSet followers = cassandra.execute( 
+			select("who")
+				.from("followers")
+				.where(eq("username", tweet.username)));
+
 		for(Row follower: followers.all()) {
 			for(String username: follower.getSet(0, String.class)) {
-				insert = insertInto("tweets")
-				    .value("username", username)
-				    .value("time", tweet.time == null ? new Date() : tweet.time)
-				    .value("content", "@" + tweet.username + ": " + tweet.content);
-		        cassandra.executeAsync(insert);
+				cassandra.executeAsync(
+					insertInto("tweets")
+				    	.value("username", username)
+				    	.value("time", tweet.time == null ? new Date() : tweet.time)
+				    	.value("content", "@" + tweet.username + ": " + tweet.content));
 		    }
 		}
 		return true;
