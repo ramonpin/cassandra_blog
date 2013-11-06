@@ -1,1 +1,0 @@
-Quick and dirty microblog implementation using Cassandra, Spark (webframework) and jQuery + Reactive.
