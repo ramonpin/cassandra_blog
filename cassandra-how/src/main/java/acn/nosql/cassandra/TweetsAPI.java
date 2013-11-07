@@ -4,6 +4,8 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.desc;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.insertInto;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.update;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.add;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
@@ -111,6 +113,12 @@ public class TweetsAPI {
 	               "SET who = who + ? " + 
 		         "WHERE username = ?");
 		
+		// Usando el query-builder sería así
+		// *************************************************************
+		// cassandra.execute(update("followers")
+		//                  .where(eq("username", follow.username))
+		//                  .with(add("who", follow.followed)));
+		
 		set.clear();
 		set.add(follow.username);
 		cassandra.execute(psFollowers.bind(set, follow.followed));
@@ -134,6 +142,8 @@ public class TweetsAPI {
 				"UPDATE followers " +
 	               "SET who = who - ? " + 
 		         "WHERE username = ?");
+		
+		
 		
 		set.clear();
 		set.add(follow.username);
