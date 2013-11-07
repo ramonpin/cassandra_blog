@@ -159,6 +159,13 @@ public class MachineRoom {
 			"  PRIMARY KEY (username)                    " + 
 		    ")                                           ");
 		
+		session.execute(
+			"CREATE TABLE IF NOT EXISTS followers (      " +
+		    "  username text,                            " +
+			"  who set<text>,                      " +
+			"  PRIMARY KEY (username)                    " + 
+		    ")                                           ");
+
 		session.shutdown();
 	}
 	
